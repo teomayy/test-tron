@@ -1,0 +1,35 @@
+services:
+  tron-service:
+    build: .
+    container_name: tron-service
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - '3000:3000'
+    command: sh -c "npx prisma migrate deploy && node dist/main"
+
+    depends_on:
+      - db
+    networks:
+      - tron-net
+
+  db:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: test-tron
+    ports:
+      - '5433:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - tron-net
+
+networks:
+  tron-net:
+
+volumes:
+  pgdata:

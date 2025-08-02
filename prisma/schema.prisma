@@ -1,0 +1,37 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model TronDepositAddress {
+  id         Int      @id @default(autoincrement())
+  address    String   @unique
+  privateKey String   @map("private_key")
+  orderId    Int      @map("order_id")
+  userId     Int      @map("user_id")
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+}
+
+model ReceivedTransaction {
+  id          Int      @id @default(autoincrement())
+  tronAddress String   @map("tron_address")
+  txHash      String   @unique @map("tx_hash")
+  sender      String
+  amount      Decimal  @db.Decimal(24, 6)
+  confirmed   Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+}
+
+model Order {
+  id             Int      @id @default(autoincrement())
+  depositAddress String   @unique
+  amount         Decimal  @db.Decimal(24, 6)
+  status         String
+  callbackUrl    String?
+  createdAt      DateTime @default(now())
+}
