@@ -1,34 +1,19 @@
 import { NestFactory } from '@nestjs/core';
-import { WinstonModule } from 'nest-winston';
-import * as winston from 'winston';
 import { AppModule } from './app.module';
+import { LokiLoggerService } from './common/logger/logger.service';
 
 async function bootstrap() {
+  const logger = new LokiLoggerService();
+  logger.log('🟢 Starting Tron Service...');
+
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
-    logger: WinstonModule.createLogger({
-      transports: [
-        new winston.transports.Console({
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.json(),
-            winston.format.printf(({ level, message, timestamp }) => {
-              // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-              return `[${timestamp}] ${level}: ${message}`;
-            }),
-          ),
-        }),
-        new winston.transports.File({
-          filename: 'logs/error.log',
-          level: 'error',
-        }),
-        new winston.transports.File({ filename: 'logs/combined.log' }),
-      ],
-    }),
+    // logger,
   });
 
+  app.useLogger(logger);
   app.enableShutdownHooks();
-
   await app.listen(process.env.PORT ?? 3000);
+  console.log('App started');
 }
-bootstrap();
+void bootstrap();

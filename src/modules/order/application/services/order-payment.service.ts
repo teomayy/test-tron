@@ -1,18 +1,26 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
+
+import { LokiLoggerService } from 'src/common/logger/logger.service';
 import { IOrderRepository } from '../../domain/repositories/order.repository';
 import { ICallbackSender } from '../ports/callback-sender.port';
 
 @Injectable()
-export class OrderPaymentService {
-  private readonly logger = new Logger();
-
+export class OrderPaymentService implements OnApplicationBootstrap {
   constructor(
     @Inject('IOrderRepository')
     private readonly orderRepo: IOrderRepository,
 
     @Inject('ICallbackSender')
     private readonly callbackSender: ICallbackSender,
+    private readonly logger: LokiLoggerService,
   ) {}
+
+  onApplicationBootstrap() {
+    this.logger.log(
+      '🚀 Tron Service fully bootstrapped!',
+      'OrderPaymentService',
+    );
+  }
 
   async confirmIfPaid(address: string, amount: number): Promise<void> {
     const order = await this.orderRepo.findByAddress(address);
@@ -41,12 +49,16 @@ export class OrderPaymentService {
     }
 
     await this.orderRepo.markAsPaid(order.id);
-    this.logger.log(`Заказ #${order.id} успешно оплачен`);
+    this.logger.log({
+      level: 'info',
+      message: `Заказ #${order.id} успешно оплачен`,
+    });
 
     if (order.callbackUrl) {
-      this.logger.log(
-        `Отправка callback для заказа #${order.id} на ${order.callbackUrl}`,
-      );
+      this.logger.log({
+        level: 'info',
+        message: `Отправка callback для заказа #${order.id} на ${order.callbackUrl}`,
+      });
       await this.callbackSender.send(order.callbackUrl, {
         orderId: order.id,
         status: 'paid',

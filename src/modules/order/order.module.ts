@@ -1,12 +1,13 @@
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
-import { InfraModule } from 'src/infra/prisma.module';
+import { LoggerModule } from 'src/common/logger/logger.module';
+import { PrismaModule } from 'src/infra/prisma.module';
 import { OrderPaymentService } from './application/services/order-payment.service';
 import { OrderPrismaRepository } from './infrastructure/repositories/order.prisma.repository';
 import { HttpCallbackSender } from './infrastructure/services/http-callback.service';
 
 @Module({
-  imports: [InfraModule, HttpModule],
+  imports: [PrismaModule, HttpModule, LoggerModule],
   providers: [
     OrderPaymentService,
     {
@@ -18,6 +19,6 @@ import { HttpCallbackSender } from './infrastructure/services/http-callback.serv
       useClass: HttpCallbackSender,
     },
   ],
-  exports: [OrderPaymentService],
+  exports: ['IOrderRepository', OrderPaymentService],
 })
 export class OrderModule {}

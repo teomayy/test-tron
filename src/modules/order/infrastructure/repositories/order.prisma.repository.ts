@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/infra/prisma.service';
 import { Order } from '../../domain/entities/order.entity';
 import { IOrderRepository } from '../../domain/repositories/order.repository';
 
 @Injectable()
 export class OrderPrismaRepository implements IOrderRepository {
+  private readonly logger = new Logger(OrderPrismaRepository.name);
   constructor(private readonly prisma: PrismaService) {}
 
   async findByAddress(address: string): Promise<Order | null> {
@@ -12,7 +13,10 @@ export class OrderPrismaRepository implements IOrderRepository {
       where: { depositAddress: address },
     });
 
-    if (!orderRecord) return null;
+    if (!orderRecord) {
+      this.logger.log(`Заказ с адресом ${address} не найден`);
+      return null;
+    }
 
     return new Order(
       orderRecord.id,

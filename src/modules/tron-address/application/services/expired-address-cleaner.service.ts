@@ -5,7 +5,6 @@ import { PrismaService } from 'src/infra/prisma.service';
 @Injectable()
 export class ExpiredAddressCleanerService {
   private readonly logger = new Logger(ExpiredAddressCleanerService.name);
-
   constructor(private readonly prisma: PrismaService) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -18,6 +17,8 @@ export class ExpiredAddressCleanerService {
 
     if (result.count > 0) {
       this.logger.log(`Удалено просроченных адресов: ${result.count}`);
+    } else {
+      this.logger.log(`Нет просроченных адресов для удаления`);
     }
   }
 }
