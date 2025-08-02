@@ -1,11 +1,11 @@
-import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common'
 
-import { LokiLoggerService } from 'src/common/logger/logger.service';
-import { IOrderRepository } from '../../domain/repositories/order.repository';
-import { ICallbackSender } from '../ports/callback-sender.port';
+import { LokiLoggerService } from 'src/common/logger/logger.service'
+import { IOrderRepository } from '../../domain/repositories/order.repository'
+import { ICallbackSender } from '../ports/callback-sender.port'
 
 @Injectable()
-export class OrderPaymentService implements OnApplicationBootstrap {
+export class OrderPaymentService  {
   constructor(
     @Inject('IOrderRepository')
     private readonly orderRepo: IOrderRepository,
@@ -14,13 +14,6 @@ export class OrderPaymentService implements OnApplicationBootstrap {
     private readonly callbackSender: ICallbackSender,
     private readonly logger: LokiLoggerService,
   ) {}
-
-  onApplicationBootstrap() {
-    this.logger.log(
-      '🚀 Tron Service fully bootstrapped!',
-      'OrderPaymentService',
-    );
-  }
 
   async confirmIfPaid(address: string, amount: number): Promise<void> {
     const order = await this.orderRepo.findByAddress(address);
